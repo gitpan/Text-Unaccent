@@ -1,0 +1,45 @@
+$Header: /cvsroot/unac/Text-Unaccent/README,v 1.2 2000/09/28 16:46:08 loic Exp $
+
+What is it ?
+------------
+
+Text::Unaccent is a module that provides functions to remove accents
+from a string.  For instance the string été will become ete.  The
+charset of the input string is specified as an argument. The input is
+converted to UTF-16 using iconv(3), accents are stripped and the
+result is converted back to the original charset. The iconv --list
+command on GNU/Linux will show all charset supported.
+
+Text-Unaccent-1.01 has the same unac.[ch] files than unac-1.1.0
+
+Where is the documentation ?
+----------------------------
+
+Try man Text::Unaccent
+
+How to install it ?
+-------------------
+
+perl Makefile.PL
+
+make all
+
+make test
+
+make install
+
+A simple example
+----------------
+
+use Text::Unaccent;
+
+unac_string("ISO-8859-1", "été") => "ete"
+
+Where can I download it ?
+-------------------------
+The main distribution site is http://www.sourceforge.net/projects/unac/
+and the tarball is Text-Unaccent.?.??.tar.gz.
+
+Loic Dachary
+loic@senga.org
+http://www.senga.org/

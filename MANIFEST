@@ -1,0 +1,9 @@
+ChangeLog
+MANIFEST
+Makefile.PL
+README
+Unaccent.pm
+Unaccent.xs
+t/unac.t
+unac.c
+unac.h
