@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2000 Loic Dachary
+ * Copyright (C) 2000, 2001, 2002, 2004 Loic Dachary <loic@senga.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,48 +18,92 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "perlio.h"
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
+
+/*
+ * Perl config.h defines HAS_VPRINTF if printf variants are 
+ * available
+ */
+#ifdef HAS_VPRINTF
+#define HAVE_VSNPRINTF
+#endif /* HAS_VPRINTF */
 
 #include "unac.h"
 
 static char* buffer;
 static int buffer_length;
 
+static void unac_debug_print(const char* message, void* data)
+{
+  if(PerlIO_puts(PerlIO_stderr(), message) != strlen(message))
+    perror("unac_debug_print");
+}
+
 MODULE = Text::Unaccent PACKAGE = Text::Unaccent PREFIX = perl_
 
 BOOT:
 	buffer = 0;
 	buffer_length = 0;
+	{
+		SV* sv;
+		sv = get_sv("Text::Unaccent::DEBUG_NONE", TRUE|GV_ADDMULTI);
+		sv_setiv(sv, UNAC_DEBUG_NONE);
+		sv = get_sv("Text::Unaccent::DEBUG_LOW", TRUE|GV_ADDMULTI);
+		sv_setiv(sv, UNAC_DEBUG_LOW);
+		sv = get_sv("Text::Unaccent::DEBUG_HIGH", TRUE|GV_ADDMULTI);
+		sv_setiv(sv, UNAC_DEBUG_HIGH);
+	}
 
-char*
+SV*
 perl_unac_string(charset,in)
 	char* charset
 	char* in
 	PROTOTYPE: $$
 	CODE:
 		STRLEN in_length;
-		in = (char*)SvPV(ST(1), in_length);
-		ST(0) = sv_newmortal();
+		in_length = SvCUR(ST(1));
 		if(unac_string(charset,
 			       in, in_length,
 			       &buffer, &buffer_length) == 0) {
-		  sv_setpvn((SV*)ST(0), buffer, buffer_length);
+	          RETVAL = newSVpv(buffer, buffer_length);
 		} else {
 		  perror("unac_string");
-		  ST(0) = &PL_sv_undef;
+		  RETVAL = &PL_sv_undef;
 		}
+         OUTPUT:
+		RETVAL
 
-char*
+SV*
 perl_unac_string_utf16(in)
 	char* in
 	PROTOTYPE: $
 	CODE:
 		STRLEN in_length;
-		in = (char*)SvPV(ST(0), in_length);
-		ST(0) = sv_newmortal();
+		in_length = SvCUR(ST(0));
 		if(unac_string_utf16(in, in_length,
 				     &buffer, &buffer_length) == 0) {
-		  sv_setpvn((SV*)ST(0), buffer, buffer_length);
+	          RETVAL = newSVpv(buffer, buffer_length);
 		} else {
 		  perror("unac_string_utf16");
-		  ST(0) = &PL_sv_undef;
+		  RETVAL = &PL_sv_undef;
 		}
+	OUTPUT:
+		RETVAL
+
+SV*
+perl_unac_version()
+	CODE:
+	        RETVAL = newSVpv((char*)unac_version(), 0);
+	OUTPUT:
+		RETVAL
+
+void
+perl_unac_debug(in)
+	int in
+	PROTOTYPE: $
+	CODE:
+	        unac_debug_callback(in, unac_debug_print, NULL);

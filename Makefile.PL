@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2000 Loic Dachary
+# Copyright (C) 2000, 2001, 2002, 2004 Loic Dachary <loic@senga.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,25 +16,15 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 use strict;
+require 5.005;
 
 use ExtUtils::MakeMaker;
-
-sub MY::postamble {
-return '
-#
-# Get unac sources from the unac project CVS tree
-#
-sync:
-	cvs -z3 -d:pserver:anonymous@cvs.unac.sourceforge.net:/cvsroot/unac co unac/unac.c unac/unac.h
-	mv unac/*.[ch] .
-	rm -fr unac
-';
-}
 
 WriteMakefile(
     'NAME'	=> 'Text::Unaccent',
     'VERSION_FROM' => 'Unaccent.pm', # finds $VERSION
     'OBJECT'	=> '$(O_FILES)',
+    'DEFINE'	=> '-DHAVE_CONFIG_H',
     'C'		=> [ 'Unaccent.c', 'unac.c' ],
     'LIBS'	=> [ '-liconv' ], 
     'INC'	=> '-I.',
